@@ -1,11 +1,35 @@
 import React, { useEffect, useState  } from 'react';
 import axios from 'axios';
-import { PieChart, Pie, AreaChart, Area, LineChart, Line  } from 'recharts';
+import { Cell, PieChart, Pie, AreaChart, Area, LineChart, Line  } from 'recharts';
+
+const colors = {
+  red: {
+    hex: '#ffb3ba',
+    rgb: '(255,179,186)'
+  },
+  pink: {
+    hex: '#ffdfba',
+    rgb: '(255,223,186)'
+  },
+  yellow: {
+    hex: '#ffffba',
+    rgb: '(255,255,186)'
+  },
+  green: {
+    hex: '#baffc9',
+    rgb: '(186,255,201)'
+  },
+  blue: {
+    hex: '#bae1ff',
+    rgb: '(186,225,255)'
+  }
+}
 
 function Search() {
   const [ isLoaded, setIsLoaded ] = useState(false)
   const [ error, setError ] = useState(null)
   const [ list, setList ] = useState([])
+  const [ piData, setPiData ] = useState([])
 
   // const url = 'http://localhost:3001/api/comments/search/depp'
   let q = "depp"
@@ -13,27 +37,57 @@ function Search() {
 
   useEffect(() => {
     axios.get(url)
-      .then((data) => {
-        console.log("WORKING")
-        console.log(data.data)
+      .then(async (data) => {
+
         setList(data.data)
+
+        let neg = { name: "neg", value: 0 }
+        let pos = { name: "pos", value: 0 }
+        let neutral = { name: "neutral", value: 0 }
+        data.data.forEach((record) => {
+          console.log("RECORD : " + record)
+          neg.value += record.neg
+          pos.value += record.pos
+          neutral.value += record.neutral
+        })
+
+        // function clean(data, len) {
+        //   return new Promise((resolve, reject) => {
+        //     try {
+        //       data /= len
+        //       data *= 100
+        //       resolve(Math.floor(data))
+        //     } catch(e) {
+        //       reject(e)
+        //     }
+        //   })
+        // }
+
+        // neg.value = await clean(neg.value, data.data.length)
+        // pos.value = await clean(pos.value, data.data.length)
+        // neutral.value = await clean(neutral.value, data.data.length)
+        
+        neg.value = Math.floor(neg.value * 10)
+        pos.value = Math.floor(pos.value * 10)
+        neutral.value = Math.floor(neutral.value * 10)
+
+        setPiData([ neg, pos, neutral ])
       })
       .catch((e) => {
         console.log(e.message)
       })
   }, [])
-
-  const graph = (
-    <LineChart width={400} height={400} data={list}>
-      <Line type="monotone" dataKey="uv" stroke="#8884d8" />
-    </LineChart>
-  )
+  
+  const COLORS = ['#0088FE', '#00C49F', '#FFBB28'];
 
   return (
     <div className="Search">
       <PieChart width={400} height={400}>
-        <Pie data={list} nameKey="label" dataKey="pos" cx="50%" cy="50%" outerRadius={60} fill="#8884d8" />
-        <Pie data={list} dataKey="label" cx="50%" cy="50%" innerRadius={70} outerRadius={90} fill="#82ca9d" label />
+        <Pie data={piData} dataKey="value" cx="50%" cy="50%" outerRadius={60} fill="#8884d8" label >
+          {piData.map((entry, index) => (
+            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+          ))}
+      </Pie>
       </PieChart>
       <AreaChart width={400} height={400} data={list}>
         <Area type="monotone" dataKey="pos" stroke="#8884d8" fill="#8884d8" stackId="2" />
