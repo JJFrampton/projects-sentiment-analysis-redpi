@@ -54,22 +54,6 @@ function Search() {
           if (!labels[record.label]) { labels[record.label] = { name: record.label, value: 0 } }
           labels[record.label].value += 1
         })
-
-        // function clean(data, len) {
-        //   return new Promise((resolve, reject) => {
-        //     try {
-        //       data /= len
-        //       data *= 100
-        //       resolve(Math.floor(data))
-        //     } catch(e) {
-        //       reject(e)
-        //     }
-        //   })
-        // }
-
-        // neg.value = await clean(neg.value, data.data.length)
-        // pos.value = await clean(pos.value, data.data.length)
-        // neutral.value = await clean(neutral.value, data.data.length)
         
         neg.value = Math.floor(neg.value * 10)
         pos.value = Math.floor(pos.value * 10)
