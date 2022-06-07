@@ -1,6 +1,6 @@
 import React, { useEffect, useState  } from 'react';
 import axios from 'axios';
-import { Cell, PieChart, Pie, AreaChart, Area, LineChart, Line  } from 'recharts';
+import { Tooltip, Cell, PieChart, Pie, AreaChart, Area, LineChart, Line  } from 'recharts';
 
 const colors = {
   red: {
@@ -33,7 +33,8 @@ function Search() {
   const [ labelData, setLabelData ] = useState([])
 
   // const url = 'http://localhost:3001/api/comments/search/depp'
-  let q = "depp"
+  // let q = "depp"
+  let q = "amber heard"
   const url = `http://localhost:3001/${q}?clean=true`
 
   useEffect(() => {
@@ -76,16 +77,17 @@ function Search() {
   return (
     <div className="Search">
       <PieChart width={400} height={400}>
-        <Pie data={piData} dataKey="value" cx="50%" cy="50%" outerRadius={60} fill="#8884d8" label >
+        <Pie data={piData} dataKey="value" cx="50%" cy="50%" outerRadius={60} fill="#8884d8" >
           {piData.map((entry, index) => (
             <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
           ))}
         </Pie>
-        <Pie data={labelData} dataKey="value" cx="50%" cy="50%" innerRadius={70} outerRadius={90} fill="#82ca9d" label >
+        <Pie data={labelData} dataName="name" dataKey="value" cx="50%" cy="50%" innerRadius={70} outerRadius={90} fill="#82ca9d" label >
           {labelData.map((entry, index) => (
             <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
           ))}
         </Pie>
+        <Tooltip />
       </PieChart>
       <AreaChart width={400} height={400} data={list}>
         <Area type="monotone" dataKey="pos" stroke={colors.green.hex} fill={colors.green.hex} stackId="2" />
