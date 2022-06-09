@@ -31,14 +31,62 @@ function Search() {
   const [ list, setList ] = useState([])
   const [ piData, setPiData ] = useState([])
   const [ labelData, setLabelData ] = useState([])
+  const [ searchTerm, setSearchTerm ] = useState("")
 
   // const url = 'http://localhost:3001/api/comments/search/depp'
   // let q = "depp"
-  let q = "amber heard"
-  const url = `http://localhost:3001/${q}?clean=true`
+  function getURL(q) {
+    console.log( `http://localhost:3001/${q}?clean=true` )
+    return `http://localhost:3001/${q}?clean=true`
+  }
 
   useEffect(() => {
-    axios.get(url)
+    function listener(event) {
+      if (event.code === "Enter" || event.code === "NumpadEnter") {
+        event.preventDefault();
+        let query = document.getElementById("searchBox").value
+        // console.log(searchTerm) // NOTHING !
+        //
+        // ENCODING NOT WORKING
+        axios.get( encodeURI(getURL(query)))
+        .then(async (data) => {
+
+          setList(data.data)
+
+          let neg = { name: "neg", value: 0 }
+          let pos = { name: "pos", value: 0 }
+          let neutral = { name: "neutral", value: 0 }
+          let labels = {}
+          data.data.forEach((record) => {
+            neg.value += record.neg
+            pos.value += record.pos
+            neutral.value += record.neutral
+
+            if (!labels[record.label]) { labels[record.label] = { name: record.label, value: 0 } }
+            labels[record.label].value += 1
+          })
+
+          neg.value = Math.floor(neg.value * 10)
+          pos.value = Math.floor(pos.value * 10)
+          neutral.value = Math.floor(neutral.value * 10)
+
+          setPiData([ neg, pos, neutral ])
+          setLabelData(Object.values(labels))
+        })
+        .catch((e) => {
+          console.log(e.message)
+
+        })
+      }
+    }
+    document.addEventListener("keydown", listener);
+    return () => {
+      document.removeEventListener("keydown", listener);
+    }
+  }, [])
+
+  useEffect(() => {
+    axios.get(getURL("nintendo"))
       .then(async (data) => {
 
         setList(data.data)
@@ -55,7 +103,7 @@ function Search() {
           if (!labels[record.label]) { labels[record.label] = { name: record.label, value: 0 } }
           labels[record.label].value += 1
         })
-        
+
         neg.value = Math.floor(neg.value * 10)
         pos.value = Math.floor(pos.value * 10)
         neutral.value = Math.floor(neutral.value * 10)
@@ -67,24 +115,25 @@ function Search() {
         console.log(e.message)
       })
   }, [])
-  
-  const COLORS = [
-    colors.red.hex,
-    colors.green.hex,
-    colors.yellow.hex
-  ]
+
+  const COLORS = {
+    neg: colors.red.hex,
+    pos: colors.green.hex,
+    neutral: colors.yellow.hex
+  }
 
   return (
     <div className="Search">
+      <input id="searchBox" type="text" placeholder="Search.." value={searchTerm} onChange={e => setSearchTerm(e.target.value)}/>
       <PieChart width={400} height={400}>
         <Pie data={piData} dataKey="value" cx="50%" cy="50%" outerRadius={60} fill="#8884d8" >
           {piData.map((entry, index) => (
-            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+            <Cell key={`cell-${index}`} fill={COLORS[entry.name]} />
           ))}
         </Pie>
-        <Pie data={labelData} dataName="name" dataKey="value" cx="50%" cy="50%" innerRadius={70} outerRadius={90} fill="#82ca9d" label >
+        <Pie data={labelData} dataKey="value" cx="50%" cy="50%" innerRadius={70} outerRadius={90} fill="#82ca9d" label >
           {labelData.map((entry, index) => (
-            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+            <Cell key={`cell-${index}`} fill={COLORS[entry.name]} />
           ))}
         </Pie>
         <Tooltip />
